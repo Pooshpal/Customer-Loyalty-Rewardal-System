@@ -11,7 +11,7 @@ class _database:
         self.mycursor = self.mydb.cursor()
 
     def getUserRewards(self,username):
-        self.mycursor.execute("SELECT reward FROM rewards WHERE userName = '%s'",(username))
+        self.mycursor.execute("SELECT reward FROM rewards WHERE userName = '%s'" % username)
         rewards = self.mycursor.fetchall()
         if rewards == []:return None
         else : return rewards
