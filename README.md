@@ -30,7 +30,7 @@ A Database based system to be attached to an E-Commerce website to help reward l
 #### Databases : 
     - Log        [ dateTime(DateTime) , userName(String), rewardClaimed(Boolean), billTotal(Int) ]
     - Rewards    [ dateTime_allocated(DateTime), dateTime_claimed(DateTime), userName(String), rewardToken(UNIQUE String), category(Int), status(String)]
-    - Products   [ productName(UNIQUE String), productPrice(Int), UnitsSold(Int), UnitsSold_Reward(Int)]
+    - Products   [ productCode(UNIQUE String),productName(String), productPrice(Int), UnitsSold(Int), UnitsSold_Reward(Int)]
 
 #### Operations On :
     - Log
