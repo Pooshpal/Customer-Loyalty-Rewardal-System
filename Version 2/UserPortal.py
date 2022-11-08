@@ -349,7 +349,7 @@ class userPortal:
 
 
 
-customtkinter.set_default_color_theme("blue")
-win = customtkinter.CTk()
-test_run = userPortal(win)
-win.mainloop()
+# customtkinter.set_default_color_theme("blue")
+# win = customtkinter.CTk()
+# test_run = userPortal(win)
+# win.mainloop()

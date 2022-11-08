@@ -44,7 +44,11 @@ class _database:
         productCodes = self.mycursor.fetchall()
         return productCodes[0][0]
 
-
+    #get product details
+    def getProductUnits(self,name):
+        self.mycursor.execute("SELECT unitsSold,UnitsSold_Reward FROM products where productName = %s;",(name,))
+        productInfo = self.mycursor.fetchall()
+        return productInfo[0]
     # ============================================================================================
     # ---------------------------------TABLE 2:LOG------------------------------------------------
     # ============================================================================================
@@ -73,7 +77,14 @@ class _database:
 
         return userStatus,visits,claimed
 
+    #get distinct usernames
+    def getUserName(self):
+        self.mycursor.execute("SELECT DISTINCT(userName) from logs;")
+        myresult = self.mycursor.fetchall()
+        users = list(a[0] for a in myresult)
+        return users
 
+    #get new and repeating customer details
 
     # ============================================================================================
     # ---------------------------------TABLE 3:REWARDS--------------------------------------------
@@ -96,3 +107,77 @@ class _database:
         self.mycursor.execute("UPDATE rewards set status = 'CLAIMED',dateTime_claimed = %s WHERE userName = %s AND rewardToken = %s;",(dt,userName,token))
         self.mydb.commit()
         return True
+
+    #get reward stats
+    def getRewardStat(self):
+
+        self.mycursor.execute("SELECT * from rewards;")
+        total = self.mycursor.fetchall()
+        total = len(total)
+
+        self.mycursor.execute("SELECT rewardToken from rewards where status = 'CLAIMED';")
+        claimed = self.mycursor.fetchall()
+        claimed = len(claimed)
+
+        self.mycursor.execute("SELECT rewardToken FROM rewards GROUP BY rewardToken ORDER BY COUNT(rewardToken) DESC LIMIT 1;")
+        best = self.mycursor.fetchall()
+        
+        return total,claimed,best
+
+
+        
+
+
+
+class database_admin():
+
+    def __init__(self) -> None:
+        self.connection = _database()
+    
+    def __del__(self):
+        del self.connection
+
+    # ============================================================================================
+
+    def userDashboard(self):
+        data = {}
+        users = self.connection.getUserName()
+        for user in users:
+            status,visits,claim = self.connection.getPast(userName=user)
+            rewards = self.connection.getRewards(userName=user)
+            data[user]={"Status":status,"Rewards":len(rewards),"Claimed":claim}
+        return data
+
+    def productDashboard(self):
+        data = {}
+        product_info = self.connection.getProductInfo()
+        for (name,_) in product_info:
+            unitsSold,Units_rewarded = self.connection.getProductUnits(name=name)
+            boost = Units_rewarded*100/unitsSold
+            data[name] = {"Units Sold":unitsSold,"Units Rewarded":Units_rewarded,"Boost":boost}
+        return data
+
+    def report(self):
+        data = {}
+        users = self.connection.getUserName()
+        new = 0
+        repeating = 0
+        loyal = 0
+        for user in users:
+            status,visits,claim = self.connection.getPast(userName=user)
+            if visits == 1:new = new + 1
+            elif claim == 0:repeating = repeating + 1
+            else: loyal = loyal + 1
+        
+        total,claim,best = self.connection.getRewardStat()
+
+        data["New Users"]           =   new
+        data["Repeating Users"]     =   repeating
+        data["Loyal Users"]         =   loyal
+        data["Rewardal Benefit"]    =   loyal*100/(new+loyal+repeating)
+        data["Rewards Allocated"]   =   total
+        data["Rewards Claimed"]     =   claim
+        data["Most Claimed Reward"] =   best[0][0]
+
+        return data
+
