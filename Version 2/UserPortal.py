@@ -88,7 +88,7 @@ class userPortal:
         # Fetch reward details from Database
         # Note: self.rewardTokenAvailable = ["LP%20","CP%25"]
         # Note: self.rewardsAvailable = ["LP%20 - Laptop @ 20%","CP%25 - CPU @ 25%"]
-        self.rewardsAvailable, self.rewardTokenAvailable = self.help.getUserRewards()
+        self.rewardTokenAvailable, self.rewardsAvailable  = self.help.getUserRewards()
 
         self.sidebar = Frame(self.win, bg='light blue')
         self.sidebar.place(x=30, y=120, width=330, height=650)
@@ -112,7 +112,7 @@ class userPortal:
         if len(self.rewardsAvailable) != 0:
             Entry(self.sidebar, font=("Arial", 16), textvariable=self.rewardUsed).place(x = 40, y= 310,width=280,height=25)
             for count,r in enumerate(self.rewardsAvailable):
-                Button(self.sidebar,text="          - "+r ,font=("Arial", 12),background="light pink",foreground="black" ).place(x = 40, y= 310+(count+1)*30,width=280,height=25)
+                Button(self.sidebar,text=r ,font=("Arial", 12),background="light pink",foreground="black" ).place(x = 40, y= 310+(count+1)*30,width=280,height=25)
         
         # =============================================================================
         # ======================== BODY ===============================================
@@ -225,8 +225,8 @@ class userPortal:
     def checkoutPage(self):
 
         #Allocate reward and Feed to Database
-        rewardAllocated = self.help.allocateReward(self.totalBill)
-        rewardAllocated = "None"
+        rewardAllocated, category = self.help.allocateReward(self.totalBill)
+        success = self.help.insertAllocatedReward(rewardAllocated, category)
 
         #Log This transaction into Database
         success = self.help.logIt(self.totalBill, self.rewardClaimed!="None")

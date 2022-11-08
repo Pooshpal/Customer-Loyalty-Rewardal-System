@@ -17,9 +17,12 @@ class helper:
 
     #Returns a List of all available rewards - Token and parsed into English
     def getUserRewards(self):
-         
-        rewardsToken = []
+        rewardsToken_ = self.db.getRewards(userName= self.userName)
+        rewardsToken = list(a[0] for a in rewardsToken_)
         rewardsAvailable = []
+        for r in rewardsToken:
+            temp = r + " - " + self.getProductName(r[:2]) + " @ " + r[3:] + " %"
+            rewardsAvailable.append(temp)
         return rewardsToken,rewardsAvailable
 
 #===============================================================================================
@@ -28,14 +31,25 @@ class helper:
     def getProductInfo(self):
         productNames = []
         productPrices = []
+        productInf = self.db.getProductInfo()
+        for (name,price) in productInf:
+            productNames.append(name)
+            productPrices.append(price)
         return productNames, productPrices
 
 #===============================================================================================
 
     #Return reward Allocated Token
     def allocateReward(self,bill):
-        rewardAllocated = ""
-        return rewardAllocated
+        category = 0
+        if bill < 250: category = 1
+        elif bill < 500: category = 2
+        elif bill < 750: category = 3
+        elif bill < 1000: category = 4
+        elif bill < 1250: category = 5
+        productCode = self.db.productNeedsHelp()
+        rewardAllocated = productCode + "%" + str(category*10)
+        return rewardAllocated, category
 
 #===============================================================================================
 
@@ -46,15 +60,16 @@ class helper:
 
 #===============================================================================================
 
-    #Update reward claimed status
+    #Update reward claimed status in reward
     def rewardClaimed(self,token):
-        sucess = True
+        sucess = self.db.updateReward(userName=self.userName,token=token)
         return sucess
 
 #===============================================================================================
 
     #Update product info
     def updateProduct(self,purcahsedProducts:dict,rewardClaimed):
+        
         if rewardClaimed == "None":
             pass
         sucess = True
@@ -64,8 +79,15 @@ class helper:
 
     #Return product Name given Code
     def getProductName(self,code):
-        productName = ""
+        productName = self.db.getProductName(code=code)
         return productName
+
+#===============================================================================================
+
+    #Insert allocated reward in rewards
+    def insertAllocatedReward(self,token,category):
+        success = self.db.insertReward(userName=self.userName,rewardAllocated=token,category=category)
+        return success
 
 #===============================================================================================
 

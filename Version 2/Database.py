@@ -26,6 +26,25 @@ class _database:
         self.mydb.commit()
         pass
 
+    #get product Name from code
+    def getProductName(self,code):
+        self.mycursor.execute("SELECT productName from products where productCode = %s;",(code,))
+        myresult = self.mycursor.fetchall()
+        return myresult[0][0]
+
+    #get product Info
+    def getProductInfo(self):
+        self.mycursor.execute("SELECT productName,productPrice FROM products;")
+        productInfo = self.mycursor.fetchall()
+        return productInfo
+
+    #get least sold product Name
+    def productNeedsHelp(self):
+        self.mycursor.execute("SELECT productCode FROM products WHERE unitsSold IN (SELECT MIN(unitsSold) FROM products);")
+        productCodes = self.mycursor.fetchall()
+        return productCodes[0][0]
+
+
     # ============================================================================================
     # ---------------------------------TABLE 2:LOG------------------------------------------------
     # ============================================================================================
@@ -64,4 +83,16 @@ class _database:
     def insertReward(self,userName:str, rewardAllocated:str, category:int):
         self.mycursor.execute("INSERT into rewards (dateTime_allocated, dateTime_claimed, userName, rewardToken, category, status) VALUES (%s,%s,%s,%s,%s,%s);",(dt,None,userName, rewardAllocated, category,"ACTIVE"))
         self.mydb.commit()
-        pass
+        return True
+
+    #Get Rewards of users
+    def getRewards(self,userName:str):
+        self.mycursor.execute("SELECT rewardToken from rewards where userName = %s;",(userName,))
+        myresult = self.mycursor.fetchall()
+        return myresult
+
+    #Update status of reward
+    def updateReward(self,userName,token):
+        self.mycursor.execute("UPDATE rewards set status = 'CLAIMED',dateTime_claimed = %s WHERE userName = %s AND rewardToken = %s;",(dt,userName,token))
+        self.mydb.commit()
+        return True
