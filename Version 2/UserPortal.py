@@ -3,27 +3,34 @@ from tkinter import *
 from turtle import color
 import customtkinter
 from matplotlib.dates import FR
+import datetime
+from Helper import helper
+
 
 # Starting a class to hold one session end to end. 
 # Will store one username for one session.
 # Will include - login page, product page & bill page.
+
+
 class userPortal:
+
     # initialize a window for all frames.
     def __init__(self, win) -> None:
         self.win = win
-        self.user = StringVar(value = "")
         self.win.configure(background="light blue")
         self.win.title("E Commerce Website")
         self.win.geometry("1800x800")
         self.win.resizable(0, 0)
-        self.loginFrame  = Frame(background="light green",relief='sunken')
-        self.loginFrame.place(relx=.5, rely=.5,anchor="c")
         self.loginPage()
 
 
 
     # Log In Page
     def loginPage(self, err = 0):        
+
+        self.loginFrame  = Frame(background="light green",relief='sunken')
+        self.loginFrame.place(relx=.5, rely=.5,anchor="c")
+        self.user = StringVar(value = "")
 
         loginLabel     =   Label(self.loginFrame, text="Login",background='light green', fg="#FFFFFF", font=("Arial", 30))
         usernameLabel  =   Label(self.loginFrame, text="Username", background='light green', fg="#FFFFFF", font=("Arial", 16))
@@ -51,6 +58,7 @@ class userPortal:
             for widget in self.loginFrame.winfo_children():
                 widget.destroy()
             self.loginFrame.place_forget()
+            self.help = helper(self.user.get().strip())
             self.productPage()
 
 
@@ -73,12 +81,14 @@ class userPortal:
         # ================== SIDEBAR ===================================================
         # ==============================================================================
         
-        # Fetch from database
+        # Fetch past from database
         # Note: rewardsAvailable should : "rewardToken - productName @ 25%"
-        userStatus,visitNumber, userRewardsClaimedCount, self.rewardsAvailable = ["NONE","NONE","NONE",["NONE"]]
-        self.rewardTokenAvailable = ["LP%20","CP%25"]
-        self.rewardsAvailable = ["LP%20 - Laptop @ 20%","CP%25 - CPU @ 25%"]
-        #rewardsAvailable = []
+        userStatus, visitNumber, userRewardsClaimedCount = self.help.getUserPast()
+
+        # Fetch reward details from Database
+        # Note: self.rewardTokenAvailable = ["LP%20","CP%25"]
+        # Note: self.rewardsAvailable = ["LP%20 - Laptop @ 20%","CP%25 - CPU @ 25%"]
+        self.rewardsAvailable, self.rewardTokenAvailable = self.help.getUserRewards()
 
         self.sidebar = Frame(self.win, bg='light blue')
         self.sidebar.place(x=30, y=120, width=330, height=650)
@@ -108,18 +118,16 @@ class userPortal:
         # ======================== BODY ===============================================
         # =============================================================================
 
-        # Fetch from database
-        self.product_names , self.product_prices = [["None"],[0]]
-        self.product_names  = ["Laptop","CPU","Monitor","Cables"]
-        self.product_prices = [250,450,510,50]
-
+        # Fetch product info from database
+        # Note: self.product_names  = ["Laptop","CPU","Monitor","Cables"]
+        # NOte: self.product_prices = [250,450,510,50]
+        self.product_names, self.product_prices = self.help.getProductInfo()
         
         self.product_list = Frame(self.win,background="white")
         self.product_list.place(x = 380,y=120,width = 1400,height=600)
         
         self.product_list.grid_columnconfigure(0, weight=1)
         self.spinboxValues = {}
-
 
         for count,(name,price) in enumerate(zip(self.product_names,self.product_prices)):
             Label(self.product_list,text=name ,font=("Arial", 15),background="light blue",foreground="white",width=25).grid(row=count, column=0,padx=5,pady=5)
@@ -136,7 +144,7 @@ class userPortal:
         self.footer = Frame(self.win,background="light grey")
         self.footer.place(x = 380,y=700,width = 1400,height=70)
 
-        self.logoutButton = customtkinter.CTkButton(master=self.win, text="Log Out",width=100,height=40)
+        self.logoutButton = customtkinter.CTkButton(master=self.win, text="Log Out",width=100,height=40,command=self.logout)
         self.logoutButton.place(x = 940,y = 725)
 
         self.purchaseButton = customtkinter.CTkButton(master=self.win, text="Purchase",width=100,height=40,command=self.transitionToCheckout)
@@ -150,6 +158,7 @@ class userPortal:
 
 # Transition from Product page to Checkout Page.
     def transitionToCheckout(self):
+        
         bill = 0
         reward_flag = True
         rewardToken_flag = True
@@ -162,12 +171,13 @@ class userPortal:
             else:
                 reward_applicable = False
 
-        # Get product Name from Token Product code using sql.
+        # Get product Name from Token Product from Database
         if rewardToken_flag and reward_applicable:
             token = self.rewardUsed.get().strip()
             code = token[:2]
             discount = int(token[3:])
-            rewardProduct = "Laptop"
+            #rewardProduct = "Laptop"
+            rewardProduct = self.help.getProductName(code)
 
         self.purchasedProducts = {}
         for count,pr in enumerate(self.product_prices):
@@ -181,18 +191,14 @@ class userPortal:
                 self.purchasedProducts[self.product_names[count]] =  self.spinboxValues["item{0}".format(count)].get()
             bill = bill + val
 
-
+        print("\nDebug Console:")
+        print("===============================================")
         print("Bill: ",bill)
         print("Reward Used:",self.rewardUsed.get())
-        #print("Reward Code:",code)
         print("Is reward Token Valid:",rewardToken_flag)
         print("Is reward product purchased",reward_flag)
         print("Is bill 0:",bill==0)
-        
-        
 
-               
- 
         if not rewardToken_flag:
             self.helper_reset()
             self.productPage(err=2) 
@@ -207,40 +213,83 @@ class userPortal:
 
         else:
             self.helper_reset()
+            if reward_applicable:
+                self.rewardClaimed = token
+            else:
+                self.rewardClaimed = "NONE"
+            self.totalBill = bill
             self.checkoutPage()
 
 
 # Final Page to see bill and checkout
     def checkoutPage(self):
 
-        self.check = Frame(self.win,background="white")
+        #Allocate reward and Feed to Database
+        rewardAllocated = self.help.allocateReward(self.totalBill)
+        rewardAllocated = "None"
+
+        #Log This transaction into Database
+        success = self.help.logIt(self.totalBill, self.rewardClaimed!="None")
+
+        #Update products info in database
+        success = self.help.updateProduct(self.purchasedProducts,self.rewardClaimed)
+
+        #Update reward claimed status in Database if used
+        if self.rewardClaimed != "None":
+            success = self.help.rewardClaimed(self.rewardClaimed)
+
+
+        self.check = Frame(self.win,background = "white")
         self.check.place(x = 600,y=100,width = 600,height=400)
 
-        billHeading = Label()
-        billHeading.grid()
-         
-        forUserDate = Label()
-        forUserDate.grid()
+        Label(self.check,text="",background="white").grid(row=1)
+        billHeading = Label(self.check, text = "BILL" ,font=("Arial", 30),background="light blue",foreground="black" )
+        billHeading.grid(row=2,column=0)
+        
+        line1= Label(self.check, text = "-------------------------------------------------------------------------------------" ,font=("Arial", 15),background="white",foreground="black")
+        line1.grid(row = 3,column=0)
+        
+        forUserDate = Label(self.check, text = str("\nUser :"+self.user.get()+"               Date:"+str(datetime.date.today())) ,font=("Arial", 13),background="white",foreground="black")
+        forUserDate.grid(row = 4,column=0)
 
-        line = Label()
-        line.grid()
+        line2= Label(self.check, text = "-------------------------------------------------------------------------------------" ,font=("Arial", 10),background="white",foreground="black")
+        line2.grid(row=5,column=0)
 
-        for count,pro,pr in enumerate(self.purchasedProducts):
-            Label().grid()
+        for count,(pro,pr) in enumerate(self.purchasedProducts.items()):
+            Label(self.check, text = str(str(count+1) + " - " + pro + "     - x" + str(pr)) ,background="white",font=("Arial", 15),foreground="black").grid(row = 5+count)
 
-        line.grid()
+        line3= Label(self.check, text = "-------------------------------------------------------------------------------------" ,font=("Arial", 15),background="white",foreground="black")
+        line3.grid(row=6+count)
 
-        rewardLabel = Label()
-        rewardLabel.grid()
+        rewardLabel = Label(self.check, text = str("Reward Used : "+self.rewardClaimed) ,background="white",font=("Arial", 13),foreground="black")
+        rewardLabel.grid(row = 7+count)
 
-        rewarded = Label()
-        rewarded.grid()
+        rewarded = Label(self.check, text = str("You are Rewarded : "+rewardAllocated) ,background="white",font=("Arial", 13),foreground="black")
+        rewarded.grid(row = 8+count)
 
+        line4= Label(self.check, text = "-------------------------------------------------------------------------------------" ,font=("Arial", 15),background="white",foreground="black")
+        line4.grid(row = 9+count)
+
+        bill = Label(self.check, text = str("                                                      Total Bill : "+str(self.totalBill)) ,background="white",font=("Arial", 15),foreground="red")
+        bill.grid(row = 10+count)
+
+
+        self.FlogoutButton = customtkinter.CTkButton(master=self.win, text="Log Out",width=100,height=40,command=self.transitionToLogin)
+        self.FlogoutButton.place(x = 850,y = 455)
         
 
-        
+    def transitionToLogin(self):
+        for widget in self.check.winfo_children():
+            widget.destroy()
+        self.check.place_forget()
+        self.FlogoutButton.destroy()
+        self.loginPage()
+
+    def logout(self):
+        self.helper_reset()
+        self.loginPage()
     
-#Helper Functions
+#In-Class components Helper Functions
     def helper_reset(self):
         for widget in self.productPageframe.winfo_children():
             widget.destroy()
