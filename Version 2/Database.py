@@ -8,9 +8,13 @@ class _database:
         host="localhost",
         user="root",
         password="password",
-        database="datBucket"
+        database="dataBucket"
         )
         self.mycursor = self.mydb.cursor()
+    
+    def __del__(self):
+        self.mycursor.close()
+        self.mydb.close()
 
     # ============================================================================================
     # ---------------------------------TABLE 1:RPODUCTS-------------------------------------------
@@ -28,12 +32,29 @@ class _database:
 
 
     #Insert Log
-    def insertLog(self, userName:str, bill:int ,rewardClaimed:bool):
+    def insertLog(self, userName:str, bill:int ,rewardClaimed:str):
         self.mycursor.execute("INSERT into log (dateTime, userName, rewardClaimed, billTotal) VALUES (%s,%s,%s,%s);",(dt, userName, rewardClaimed, bill ))
         self.mydb.commit()
-        pass
+        return True
 
-    #
+
+    #Get past
+    def getPast(self,userName):
+
+        self.mycursor.execute("SELECT * from logs where userName = %s;",(userName,))
+        myresult = self.mycursor.fetchall()
+
+        visits = len(myresult)
+        if myresult != []:  userStatus = "LOYAL"
+        else             :  userStatus = "NEW"
+
+        self.mycursor.execute("SELECT * from logs where userName = %s AND rewardClaimed = 'True';",(userName,))
+        myresult = self.mycursor.fetchall()
+        claimed = len(myresult)
+
+        return userStatus,visits,claimed
+
+
 
     # ============================================================================================
     # ---------------------------------TABLE 3:REWARDS--------------------------------------------

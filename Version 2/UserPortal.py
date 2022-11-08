@@ -99,10 +99,10 @@ class userPortal:
         statusLabel = Label(self.sidebar, text="Status : "+userStatus ,font=("Arial", 15),background="light blue",foreground="black" )
         statusLabel.place(x = 40, y= 160)
 
-        visitLabel = Label(self.sidebar, text="No. Of Visits : "+visitNumber ,font=("Arial", 15),background="light blue",foreground="black" )
+        visitLabel = Label(self.sidebar, text="No. Of Visits : "+str(visitNumber) ,font=("Arial", 15),background="light blue",foreground="black" )
         visitLabel.place(x = 40, y= 200)
         
-        rewardsClaimedLabel = Label(self.sidebar, text="Rewards Claimed : "+userRewardsClaimedCount ,font=("Arial", 15),background="light blue",foreground="black" )
+        rewardsClaimedLabel = Label(self.sidebar, text="Rewards Claimed : "+str(userRewardsClaimedCount) ,font=("Arial", 15),background="light blue",foreground="black" )
         rewardsClaimedLabel.place(x = 40, y= 240)
         
         rewardsAvailableCountLabel = Label(self.sidebar, text="Rewards Available : "+str(len(self.rewardsAvailable)) ,font=("Arial", 15),background="light blue",foreground="black" )
@@ -283,10 +283,12 @@ class userPortal:
             widget.destroy()
         self.check.place_forget()
         self.FlogoutButton.destroy()
+        del self.help
         self.loginPage()
 
     def logout(self):
         self.helper_reset()
+        del self.help
         self.loginPage()
     
 #In-Class components Helper Functions
