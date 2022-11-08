@@ -51,6 +51,7 @@ class userPortal:
 
         # Fail
         if self.user.get() == "" or self.user == None:
+            print("Debug: User name EMPTY, reloading Login Page")
             self.loginPage(err = 1)
 
         # Success
@@ -58,7 +59,9 @@ class userPortal:
             for widget in self.loginFrame.winfo_children():
                 widget.destroy()
             self.loginFrame.place_forget()
-            self.help = helper(self.user.get().strip())
+            self.help = helper(self.user.get().lower().strip())
+            print("Debug: Login : SUCCESS, Initializing Connection to helper.")
+            print("Debug: User: ",self.user.get().upper()) 
             self.productPage()
 
 
@@ -84,11 +87,19 @@ class userPortal:
         # Fetch past from database
         # Note: rewardsAvailable should : "rewardToken - productName @ 25%"
         userStatus, visitNumber, userRewardsClaimedCount = self.help.getUserPast()
+        print("Debug: Fetching from database        : help.getUserPast()")
+        print("Debug: User Status                   :",userStatus)
+        print("Debug: User Visit Number             :",visitNumber)
+        print("Debug: User Reward Claimed Count     :",userRewardsClaimedCount) 
 
         # Fetch reward details from Database
         # Note: self.rewardTokenAvailable = ["LP%20","CP%25"]
         # Note: self.rewardsAvailable = ["LP%20 - Laptop @ 20%","CP%25 - CPU @ 25%"]
         self.rewardTokenAvailable, self.rewardsAvailable  = self.help.getUserRewards()
+        print("Debug: Fetching from database        : help.getUserRewards()")
+        print("Debug: User Reward Tokens Available  :",self.rewardTokenAvailable)
+        print("Debug: User Rewards Available        :",self.rewardsAvailable)
+
 
         self.sidebar = Frame(self.win, bg='light blue')
         self.sidebar.place(x=30, y=120, width=330, height=650)
@@ -122,6 +133,9 @@ class userPortal:
         # Note: self.product_names  = ["Laptop","CPU","Monitor","Cables"]
         # NOte: self.product_prices = [250,450,510,50]
         self.product_names, self.product_prices = self.help.getProductInfo()
+        print("Debug: Fetching from database        : help.getProductInfo()")
+        print("Debug: Product Names                 :",self.product_names)
+        print("Debug: Product Prices                :",self.product_prices)
         
         self.product_list = Frame(self.win,background="white")
         self.product_list.place(x = 380,y=120,width = 1400,height=600)
@@ -170,6 +184,10 @@ class userPortal:
                 rewardToken_flag = False
             else:
                 reward_applicable = False
+                
+        print("Debug: Reward Used       :",self.rewardUsed.get())
+        print("Debug: Reward Applicable :",reward_applicable)
+        print("Debug: Reward Valid      :",rewardToken_flag)
 
         # Get product Name from Token Product from Database
         if rewardToken_flag and reward_applicable:
@@ -178,6 +196,9 @@ class userPortal:
             discount = int(token[3:])
             #rewardProduct = "Laptop"
             rewardProduct = self.help.getProductName(code)
+            print("Debug: Fetching from database        : help.getProductName()")
+            print("Debug: User Reward Token for Product :",rewardProduct)
+            print("Debug: Token Discount on product     :",discount)
 
         self.purchasedProducts = {}
         for count,pr in enumerate(self.product_prices):
@@ -191,24 +212,23 @@ class userPortal:
                 self.purchasedProducts[self.product_names[count]] =  self.spinboxValues["item{0}".format(count)].get()
             bill = bill + val
 
-        print("\nDebug Console:")
-        print("===============================================")
-        print("Bill: ",bill)
-        print("Reward Used:",self.rewardUsed.get())
-        print("Is reward Token Valid:",rewardToken_flag)
-        print("Is reward product purchased",reward_flag)
-        print("Is bill 0:",bill==0)
+        
+        print("Debug: Purchased Products:",self.purchasedProducts)
+        print("Debug: Bill              :",bill)
 
         if not rewardToken_flag:
             self.helper_reset()
+            print("Debug: Reward Token Invalid")
             self.productPage(err=2) 
 
         elif bill == 0 : 
             self.helper_reset()
+            print("Debug: Purchase Something")
             self.productPage(err=1) 
 
         elif not reward_flag:
             self.helper_reset()
+            print("Debug: Reward Product Not Purchased")
             self.productPage(err=3) 
 
         else:
@@ -217,6 +237,8 @@ class userPortal:
                 self.rewardClaimed = token
             else:
                 self.rewardClaimed = "NONE"
+            print("Debug: Reward Claimed        :",self.rewardClaimed)
+            print("Debug: Product Page Success, Initiating CHeckout")
             self.totalBill = bill
             self.checkoutPage()
 
@@ -227,16 +249,25 @@ class userPortal:
         #Allocate reward and Feed to Database
         rewardAllocated, category = self.help.allocateReward(self.totalBill)
         success = self.help.insertAllocatedReward(rewardAllocated, category)
+        print("Debug: Fetching from database        : help.allocateReward()")
+        print("Debug: Reward Allocated to User      :",rewardAllocated)
+        print("Debug: Reward Allocated Category     :",category)
 
         #Log This transaction into Database
-        success = self.help.logIt(self.totalBill, self.rewardClaimed!="None")
+        success = self.help.logIt(self.totalBill, self.rewardClaimed!="NONE")
+        print("Debug: Fetching from database        : help.logIt()")
+        print("Debug: Transaction Log               :",success)
 
         #Update products info in database
         success = self.help.updateProduct(self.purchasedProducts,self.rewardClaimed)
+        print("Debug: Fetching from database        : help.updateProduct()")
+        print("Debug: Update product                :",success)
 
         #Update reward claimed status in Database if used
         if self.rewardClaimed != "None":
             success = self.help.rewardClaimed(self.rewardClaimed)
+            print("Debug: Fetching from database        : help.rewardClaimed()")
+            print("Debug: Updating Reward Claimed       :",success)
 
 
         self.check = Frame(self.win,background = "white")
@@ -249,29 +280,29 @@ class userPortal:
         line1= Label(self.check, text = "-------------------------------------------------------------------------------------" ,font=("Arial", 15),background="white",foreground="black")
         line1.grid(row = 3,column=0)
         
-        forUserDate = Label(self.check, text = str("\nUser :"+self.user.get()+"               Date:"+str(datetime.date.today())) ,font=("Arial", 13),background="white",foreground="black")
+        forUserDate = Label(self.check, text = str("\nUser :"+self.user.get().upper()+"               Date:"+str(datetime.date.today())) ,font=("Arial", 13),background="white",foreground="black")
         forUserDate.grid(row = 4,column=0)
 
         line2= Label(self.check, text = "-------------------------------------------------------------------------------------" ,font=("Arial", 10),background="white",foreground="black")
         line2.grid(row=5,column=0)
 
         for count,(pro,pr) in enumerate(self.purchasedProducts.items()):
-            Label(self.check, text = str(str(count+1) + " - " + pro + "     - x" + str(pr)) ,background="white",font=("Arial", 15),foreground="black").grid(row = 5+count)
+            Label(self.check, text = str(str(count+1) + " - " + pro + "     - x" + str(pr)) ,background="white",font=("Arial", 15),foreground="black").grid(row = 6+count)
 
         line3= Label(self.check, text = "-------------------------------------------------------------------------------------" ,font=("Arial", 15),background="white",foreground="black")
-        line3.grid(row=6+count)
+        line3.grid(row=7+count)
 
         rewardLabel = Label(self.check, text = str("Reward Used : "+self.rewardClaimed) ,background="white",font=("Arial", 13),foreground="black")
-        rewardLabel.grid(row = 7+count)
+        rewardLabel.grid(row = 8+count)
 
         rewarded = Label(self.check, text = str("You are Rewarded : "+rewardAllocated) ,background="white",font=("Arial", 13),foreground="black")
-        rewarded.grid(row = 8+count)
+        rewarded.grid(row = 9+count)
 
         line4= Label(self.check, text = "-------------------------------------------------------------------------------------" ,font=("Arial", 15),background="white",foreground="black")
-        line4.grid(row = 9+count)
+        line4.grid(row = 10+count)
 
         bill = Label(self.check, text = str("                                                      Total Bill : "+str(self.totalBill)) ,background="white",font=("Arial", 15),foreground="red")
-        bill.grid(row = 10+count)
+        bill.grid(row = 11+count)
 
 
         self.FlogoutButton = customtkinter.CTkButton(master=self.win, text="Log Out",width=100,height=40,command=self.transitionToLogin)
@@ -283,16 +314,19 @@ class userPortal:
             widget.destroy()
         self.check.place_forget()
         self.FlogoutButton.destroy()
+        print("Debug: Logout User           :",self.user.get().upper())
         del self.help
         self.loginPage()
 
     def logout(self):
         self.helper_reset()
+        print("Debug: Logout User:",self.user.get().upper())
         del self.help
         self.loginPage()
     
 #In-Class components Helper Functions
     def helper_reset(self):
+        print("Debug: Resetting Product Page")
         for widget in self.productPageframe.winfo_children():
             widget.destroy()
         for widget in self.footer.winfo_children():

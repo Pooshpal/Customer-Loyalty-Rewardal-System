@@ -41,12 +41,12 @@ class helper:
 
     #Return reward Allocated Token
     def allocateReward(self,bill):
-        category = 0
+        category = 1
         if bill < 250: category = 1
         elif bill < 500: category = 2
         elif bill < 750: category = 3
         elif bill < 1000: category = 4
-        elif bill < 1250: category = 5
+        else : category = 5
         productCode = self.db.productNeedsHelp()
         rewardAllocated = productCode + "%" + str(category*10)
         return rewardAllocated, category
@@ -69,10 +69,12 @@ class helper:
 
     #Update product info
     def updateProduct(self,purcahsedProducts:dict,rewardClaimed):
-        
-        if rewardClaimed == "None":
-            pass
         sucess = True
+        for (name,qty) in purcahsedProducts.items():
+            if rewardClaimed!="NONE" and  name == self.getProductName(rewardClaimed[:2]):
+                success = self.db.updateProducts(qty=qty, productName=name,rewardClaimed=qty)
+            else:
+                success = self.db.updateProducts(qty=qty, productName=name)
         return sucess
 
 #===============================================================================================

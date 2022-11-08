@@ -21,10 +21,10 @@ class _database:
     # ============================================================================================
 
     #Update Product Unit Sold and Units Sold - Rewarded
-    def updateProducts(self, productCode, rewardClaimed = False):
-        self.mycursor.execute("")
+    def updateProducts(self, productName, qty, rewardClaimed = 0):
+        self.mycursor.execute("UPDATE products set unitsSold = unitsSold + %s,UnitsSold_Reward = UnitsSold_Reward + %s WHERE productName = %s ;",(qty,rewardClaimed,productName))
         self.mydb.commit()
-        pass
+        return True
 
     #get product Name from code
     def getProductName(self,code):
@@ -52,7 +52,7 @@ class _database:
 
     #Insert Log
     def insertLog(self, userName:str, bill:int ,rewardClaimed:str):
-        self.mycursor.execute("INSERT into log (dateTime, userName, rewardClaimed, billTotal) VALUES (%s,%s,%s,%s);",(dt, userName, rewardClaimed, bill ))
+        self.mycursor.execute("INSERT into logs (dateTime, userName, rewardClaimed, billTotal) VALUES (%s,%s,%s,%s);",(dt, userName, rewardClaimed, bill ))
         self.mydb.commit()
         return True
 

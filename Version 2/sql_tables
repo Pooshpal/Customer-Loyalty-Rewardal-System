@@ -1,0 +1,28 @@
+<mxfile host="65bd71144e">
+    <diagram id="i71N-14s1TvSHtGzqM67" name="Page-1">
+        <mxGraphModel dx="878" dy="908" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="3300" pageHeight="2339" background="none" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="31" value="logs" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;fillColor=default;gradientColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="40" y="-10" width="160" height="140" as="geometry"/>
+                </mxCell>
+                <mxCell id="32" value="DateTime&#10;UserName&#10;Reward Claimed&#10;bill Total" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;fontSize=12;verticalAlign=top;resizable=0;rotatable=0;part=1;" vertex="1" parent="31">
+                    <mxGeometry y="30" width="160" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="33" value="rewards" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;fillColor=default;gradientColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="230" y="-10" width="160" height="140" as="geometry"/>
+                </mxCell>
+                <mxCell id="34" value="DateTime_Allocated&#10;DateTime_Claimed&#10;UserName&#10;RewardToken&#10;Category&#10;Status&#10;" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;fontSize=12;verticalAlign=top;resizable=0;rotatable=0;part=1;" vertex="1" parent="33">
+                    <mxGeometry y="30" width="160" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="35" value="products" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;fillColor=default;gradientColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="430" y="-10" width="160" height="140" as="geometry"/>
+                </mxCell>
+                <mxCell id="36" value="productName&#10;productCode&#10;productPrice&#10;UnitsSold&#10;UnitsSold_Rewarded" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;fontSize=12;verticalAlign=top;resizable=0;rotatable=0;part=1;" vertex="1" parent="35">
+                    <mxGeometry y="30" width="160" height="110" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
