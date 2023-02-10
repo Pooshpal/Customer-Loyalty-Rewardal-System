@@ -29,7 +29,7 @@ class userPortal:
     def loginPage(self, err = 0):        
 
         self.loginFrame  = Frame(background="light green",relief='sunken')
-        self.loginFrame.place(relx=.5, rely=.5,anchor="c")
+        self.loginFrame.place(relx=.5, rely=.5,anchor="center")
         self.user = StringVar(value = "")
 
         loginLabel     =   Label(self.loginFrame, text="Login",background='light green', fg="#FFFFFF", font=("Arial", 30))
@@ -147,7 +147,7 @@ class userPortal:
             Label(self.product_list,text=name ,font=("Arial", 15),background="light blue",foreground="white",width=25).grid(row=count, column=0,padx=5,pady=5)
             Label(self.product_list,text=price ,font=("Arial", 15),background="white",foreground="black",width=25,justify=CENTER ).grid(row=count, column=1,padx=5,pady=5)
             temp = IntVar()
-            Spinbox(self.product_list,from_=0,to_=10,width=10,textvariable=temp, font=("Helvetica",15)).grid(row=count,column=2,padx=5,pady=5)
+            Spinbox(self.product_list,from_=0,to=10,width=10,textvariable=temp, font=("Helvetica",15)).grid(row=count,column=2,padx=5,pady=5)
             self.spinboxValues["item{0}".format(count)] = temp
         self.product_list.grid_columnconfigure(3, weight=1)
 

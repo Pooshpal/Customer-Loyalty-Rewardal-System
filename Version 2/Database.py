@@ -67,13 +67,13 @@ class _database:
         self.mycursor.execute("SELECT * from logs where userName = %s;",(userName,))
         myresult = self.mycursor.fetchall()
 
-        visits = len(myresult)
+        visits = len(myresult)  # type: ignore
         if myresult != []:  userStatus = "LOYAL"
         else             :  userStatus = "NEW"
 
         self.mycursor.execute("SELECT * from logs where userName = %s AND rewardClaimed = 'True';",(userName,))
         myresult = self.mycursor.fetchall()
-        claimed = len(myresult)
+        claimed = len(myresult)  # type: ignore
 
         return userStatus,visits,claimed
 
@@ -174,9 +174,9 @@ class database_admin():
         data["New Users"]           =   new
         data["Repeating Users"]     =   repeating
         data["Loyal Users"]         =   loyal
-        data["Rewardal Benefit"]    =   loyal*100/(new+loyal+repeating)
+        data["Rewardal Benefit"]    =   round(loyal*100/(new+loyal+repeating),2)
         data["Rewards Allocated"]   =   total
-        data["Rewards Claimed"]     =   claim
+        data["Rewards Claimed"]     =   round(claim,2)
         data["Most Claimed Reward"] =   best[0][0]
 
         return data
